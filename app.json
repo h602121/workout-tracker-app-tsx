@@ -1,5 +1,6 @@
-{
+{  
   "expo": {
+    "scheme" :"deeplinkguide", 
     "name": "workout-tracker-app-tsx",
     "slug": "workout-tracker-app-tsx",
     "version": "1.0.0",
@@ -25,6 +26,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
