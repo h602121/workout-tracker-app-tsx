@@ -56,7 +56,7 @@ export default function Main() {
         </View>
       </Modal>
       <Pressable
-        style={[styles.button, styles.buttonOpen]}
+        className="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         onPress={() => setModalVisible(true)}
       >
         <Text style={styles.textStyle}>Show Modal</Text>
