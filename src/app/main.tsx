@@ -11,9 +11,11 @@ import {
 import { router, useNavigation } from "expo-router";
 import LoginButton from "../components/LoginButton";
 import { useState } from "react";
+import TextInput from "../components/TextInput";
 
 export default function Main() {
-  const [workouts, setWorkouts] = useState("");
+  const [workouts, setWorkouts] = useState<string[]>([]);
+  const [value, setValue] = useState("");
 
   const [modalVisible, setModalVisible] = useState(false);
   return (
@@ -29,13 +31,27 @@ export default function Main() {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Hello World!</Text>
+            <TextInput
+              value={value}
+              onChangeText={(text) => setValue(text)}
+              placeholder="Workout"
+              keyboardType="default"
+              autoCapitalize="none"
+              textContentType="name"
+            ></TextInput>
+            <Pressable
+              style={[styles.button, styles.buttonClose]}
+              onPress={() => setWorkouts([...workouts, value])}
+            >
+              <Text style={styles.textStyle}>Add Exercise</Text>
+            </Pressable>
             <Pressable
               style={[styles.button, styles.buttonClose]}
               onPress={() => setModalVisible(!modalVisible)}
             >
-              <Text style={styles.textStyle}>Add Exercise</Text>
+              <Text style={styles.textStyle}>Close Window</Text>
             </Pressable>
+            <Text>{workouts}</Text>
           </View>
         </View>
       </Modal>
