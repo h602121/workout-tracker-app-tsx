@@ -5,6 +5,7 @@ import {
   Text,
   TouchableWithoutFeedback,
   Keyboard,
+  BackHandler,
 } from "react-native";
 import TextInput from "../components/TextInput";
 import LoginButton from "../components/LoginButton";
