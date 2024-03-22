@@ -12,6 +12,7 @@ import { router, useNavigation } from "expo-router";
 import LoginButton from "../components/LoginButton";
 import { useState } from "react";
 import TextInput from "../components/TextInput";
+import AiAssistant from "../components/AiAssistant";
 
 export default function Main() {
   const [workouts, setWorkouts] = useState<string[]>([]);
@@ -64,6 +65,8 @@ export default function Main() {
       <Pressable onPress={() => router.push("/login")}>
         <Text>Exit</Text>
       </Pressable>
+
+      <AiAssistant></AiAssistant>
     </View>
   );
 }
