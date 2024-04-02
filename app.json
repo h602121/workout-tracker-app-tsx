@@ -1,6 +1,6 @@
-{  
+{
   "expo": {
-    "scheme" :"deeplinkguide", 
+    "scheme": "deeplinkguide",
     "name": "workout-tracker-app-tsx",
     "slug": "workout-tracker-app-tsx",
     "version": "1.0.0",
@@ -22,7 +22,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.workouttrackerapptsx"
     },
     "web": {
       "favicon": "./assets/favicon.png"
