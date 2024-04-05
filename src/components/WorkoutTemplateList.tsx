@@ -1,29 +1,84 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; // Ensure this is correctly imported
+import React, { useEffect, useState } from 'react';
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSessionContext } from '../context/sessionContext'; // Ensure this is correctly imported
+import { supabase } from '../lib/supabase'; // Import your initialized Supabase client
 
-interface Workout {
-    name: string;
-    sets: number;
-    kg: number;
+
+// Adjust these interfaces to match your data structure
+interface Set {
+    set_number: number;
+    kilos: number;
     reps: number;
 }
 
-interface Props {
-    templates: { templateName: string; workouts: Workout[] }[];
-    onDelete: (templateIndex: number) => void;
-    onEdit: (templateIndex: number) => void;
-    onStart: (templateIndex: number) => void; // Handler for starting a workout
+interface Workout {
+    workout_name: string;
+    sets: Set[];
 }
 
-const WorkoutTemplateList: React.FC<Props> = ({ templates, onDelete, onEdit, onStart }) => {
+interface WorkoutTemplate {
+    template_name: string;
+    workouts: Workout[];
+}
+
+const WorkoutTemplateList: React.FC = () => {
+    const { session } = useSessionContext();
+    const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
+
+    useEffect(() => {
+        const fetchTemplates = async () => {
+            if (!session) return;
+
+            const { data, error } = await supabase
+                .from('workout_templates')
+                .select(`
+                template_name,
+                workouts (
+                    workout_name,
+                    workout_sets (
+                        set_number,
+                        kilos,
+                        reps
+                    )
+                )
+            `)
+                .eq('user_id', session.user.id);
+
+            if (error) {
+                console.error('Error fetching templates', error);
+                return;
+            }
+
+            // Transform the data to match the WorkoutTemplate[] type
+            const transformedTemplates: WorkoutTemplate[] = data?.map(template => ({
+                template_name: template.template_name,
+                workouts: template.workouts.map(workout => ({
+                    workout_name: workout.workout_name,
+                    sets: workout.workout_sets.map(set => ({  // Rename workout_sets to sets
+                        set_number: set.set_number,
+                        kilos: set.kilos,
+                        reps: set.reps
+                    }))
+                }))
+            })) || [];
+
+            setTemplates(transformedTemplates);
+        };
+
+        fetchTemplates();
+    }, [session]);
+
+    // Handlers for edit, delete, start will be implemented here
+
     return (
-        <ScrollView className="flex-1">
-            <View className="p-2">
+        <ScrollView className="flex-1 flex-grow-1 bg-white">
+            <View className="p-4">
                 {templates.map((template, index) => (
-                    <View key={index} className="mb-4 bg-blue-300 rounded-lg shadow overflow-hidden">
+                    <View key={index} className="mb-4 bg-blue-300 rounded-lg shadow-md overflow-hidden">
                         <View className="flex-row justify-between items-center p-3 bg-gray-700">
-                            <Text className="text-lg font-bold text-white flex-1">{template.templateName}</Text>
+                            <Text className="text-lg font-bold text-white flex-1">{template.template_name}</Text>
+                            {/* Icon buttons for edit and delete */}
                             <TouchableOpacity onPress={() => onEdit(index)}>
                                 <MaterialCommunityIcons name="pencil" size={24} color="white" />
                             </TouchableOpacity>
@@ -32,20 +87,22 @@ const WorkoutTemplateList: React.FC<Props> = ({ templates, onDelete, onEdit, onS
                             </TouchableOpacity>
                         </View>
 
-                        {/* Exercises List */}
-                        <View className="p-3 bg-gray-100">
-                            {template.workouts.map((workout, workoutIndex) => (
-                                <View key={workoutIndex} className="mb-3 p-2 rounded-lg bg-gray-100">
-                                    <Text className="font-semibold">{workout.name}</Text>
-                                    <View className="flex-row justify-between mt-1">
-                                        <Text className="text-sm">Sets: {workout.sets}</Text>
-                                        <Text className="text-sm">Kg: {workout.kg}</Text>
-                                        <Text className="text-sm">Reps: {workout.reps}</Text>
+
+                        {/* Workout List */}
+                        {template.workouts.map((workout, workoutIndex) => (
+                            <View key={workoutIndex} className="p-3 bg-gray-100">
+                                <Text className="font-semibold">{workout.workout_name}</Text>
+                                {workout.sets.map((set, setIndex) => (
+                                    <View key={setIndex} className="flex-row justify-between mt-1">
+                                        <Text className="text-sm">Set: {set.set_number}</Text>
+                                        <Text className="text-sm">Kg: {set.kilos}</Text>
+                                        <Text className="text-sm">Reps: {set.reps}</Text>
                                     </View>
-                                </View>
-                            ))}
-                        </View>
-                        {/* Start Button at the bottom of each card */}
+                                ))}
+                            </View>
+                        ))}
+
+                        {/* Placeholder for Start Button */}
                         <TouchableOpacity
                             className="bg-green-400 p-3 rounded-b-lg items-center flex-row justify-center h-12"
                             onPress={() => onStart(index)}>

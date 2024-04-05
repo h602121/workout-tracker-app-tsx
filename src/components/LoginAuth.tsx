@@ -60,7 +60,8 @@ export default function LoginAuth({ session }: { session: Session | null }) {
                 Alert.alert(error.message);
             } else {
                 await signInWithEmail()
-                router.push('/main'); // Direct call to navigate
+                router.push('/main');// Direct call to navigate
+
             }
         }
         setLoading(false)
