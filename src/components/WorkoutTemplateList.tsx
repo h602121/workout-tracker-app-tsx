@@ -72,20 +72,30 @@ const WorkoutTemplateList: React.FC = () => {
     // Handlers for edit, delete, start will be implemented here
 
     return (
-        <ScrollView className="flex-1 flex-grow-1 bg-white">
+        <ScrollView className="flex-1 flex-grow-1 bg-white mt-10 mb-36">
             <View className="p-4">
                 {templates.map((template, index) => (
                     <View key={index} className="mb-4 bg-blue-300 rounded-lg shadow-md overflow-hidden">
                         <View className="flex-row justify-between items-center p-3 bg-gray-700">
-                            <Text className="text-lg font-bold text-white flex-1">{template.template_name}</Text>
-                            {/* Icon buttons for edit and delete */}
-                            <TouchableOpacity onPress={() => onEdit(index)}>
-                                <MaterialCommunityIcons name="pencil" size={24} color="white" />
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => onDelete(index)} className="ml-2">
-                                <MaterialCommunityIcons name="delete" size={24} color="white" />
-                            </TouchableOpacity>
+                            {/* Left side: Template name and play button */}
+                            <View className="flex-row items-center">
+                                <Text className="text-lg font-bold text-white">{template.template_name}</Text>
+                                <TouchableOpacity onPress={() => onEdit(index)}>
+                                    <MaterialCommunityIcons name="play" size={24} color="#90EE90" />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Right side: Edit and Delete buttons */}
+                            <View className="flex-row">
+                                <TouchableOpacity onPress={() => onEdit(index)}>
+                                    <MaterialCommunityIcons name="pencil" size={24} color="white" />
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => onDelete(index)} className="ml-2">
+                                    <MaterialCommunityIcons name="delete" size={24} color="white" />
+                                </TouchableOpacity>
+                            </View>
                         </View>
+
 
 
                         {/* Workout List */}
@@ -103,12 +113,7 @@ const WorkoutTemplateList: React.FC = () => {
                         ))}
 
                         {/* Placeholder for Start Button */}
-                        <TouchableOpacity
-                            className="bg-green-400 p-3 rounded-b-lg items-center flex-row justify-center h-12"
-                            onPress={() => onStart(index)}>
-                            <MaterialCommunityIcons name="play" size={24} color="white" />
-                            <Text className="text-white font-bold ml-2">Start</Text>
-                        </TouchableOpacity>
+
                     </View>
                 ))}
             </View>

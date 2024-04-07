@@ -19,16 +19,25 @@ const WorkoutTemplatesManager: React.FC = () => {
     };
 
     return (
-        <View className="">
+        <View className="flex-1">
             <Modal visible={formVisible} animationType="slide" onRequestClose={() => setFormVisible(false)}>
                 <WorkoutTemplateForm onSave={handleSaveTemplate} />
             </Modal>
-            {/* Ensure WorkoutTemplateList can expand fully */}
-            <View className=" mt-8 border h-4/5">
-                <WorkoutTemplateList  templates={templates} />
-            </View>
-            <CreateWorkoutTemplateButton onPress={() => setFormVisible(true)} />
+
+            {/* Main content area for WorkoutTemplateList */}
+            {/* Assuming the combined height of navbar and button is around h-24 (an example, adjust as needed) */}
+
+                <WorkoutTemplateList templates={templates} />
+
+
+            {/* Assuming CreateWorkoutTemplateButton is at the bottom above the navbar */}
+            {/* This button might need custom positioning depending on your layout */}
+
+            <CreateWorkoutTemplateButton onPress={() => setFormVisible(true)}  />
+
+
         </View>
+
 
     );
 };
