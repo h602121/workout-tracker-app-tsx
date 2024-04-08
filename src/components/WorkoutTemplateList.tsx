@@ -32,6 +32,7 @@ const WorkoutTemplateList: React.FC = () => {
 
     //New Code
     const onEdit = (templateId: number) => {
+        console.log(templateId, templates.map(t => t.template_id));
         const templateToEdit = templates.find(template => template.template_id === templateId);
         if (templateToEdit) {
             setCurrentTemplateToEdit(templateToEdit);
@@ -43,18 +44,18 @@ const WorkoutTemplateList: React.FC = () => {
 
 //New Code
     const updateTemplateInDatabase = async (updatedTemplate: WorkoutTemplate) => {
+        console.log(updatedTemplate.template_id)
         if (!updatedTemplate.template_id) {
             console.error('Template missing template_id, cannot update');
             return;
         }
 
+
         const { data, error } = await supabase
             .from('workout_templates')
-            .update({
-                template_name: updatedTemplate.template_name,
-                // Ensure other fields are included as necessary
-            })
-            .match({ template_id: updatedTemplate.template_id }); // Use template_id here
+            .update({ template_name: updatedTemplate.template_name })
+            .eq('template_id', updatedTemplate.template_id)
+            .select()
 
         if (error) {
             console.error('Error updating template:', error);
