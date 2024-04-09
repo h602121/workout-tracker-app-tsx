@@ -11,10 +11,12 @@ interface Set {
     set_number: number;
     kilos: number;
     reps: number;
+    set_id: number;
 }
 
 interface Workout {
     workout_name: string;
+    workout_id: number;
     sets: Set[];
 }
 
@@ -44,7 +46,7 @@ const WorkoutTemplateList: React.FC = () => {
 
 //New Code
     const updateTemplateInDatabase = async (updatedTemplate: WorkoutTemplate) => {
-        console.log(updatedTemplate.template_id)
+
         if (!updatedTemplate.template_id) {
             console.error('Template missing template_id, cannot update');
             return;
@@ -84,7 +86,9 @@ const WorkoutTemplateList: React.FC = () => {
                  template_id,
                 workouts (
                     workout_name,
+                    workout_id,
                     workout_sets (
+                        set_id,
                         set_number,
                         kilos,
                         reps
@@ -98,18 +102,24 @@ const WorkoutTemplateList: React.FC = () => {
                 return;
             }
 
+
+
             // Transform the data to match the WorkoutTemplate[] type
             const transformedTemplates: WorkoutTemplate[] = data?.map(template => ({
                 template_name: template.template_name,
                 template_id: template.template_id,
-                workouts: template.workouts.map(workout => ({
-                    workout_name: workout.workout_name,
-                    sets: workout.workout_sets.map(set => ({  // Rename workout_sets to sets
-                        set_number: set.set_number,
-                        kilos: set.kilos,
-                        reps: set.reps
-                    }))
-                }))
+                workouts: template.workouts.map(workout => {
+                    return ({
+                        workout_name: workout.workout_name,
+                        workout_id: workout.workout_id,
+                        sets: workout.workout_sets.map(set => ({  // Rename workout_sets to sets
+                            set_number: set.set_number,
+                            kilos: set.kilos,
+                            reps: set.reps,
+                            set_id: set.set_id
+                        }))
+                    });
+                })
             })) || [];
 
             setTemplates(transformedTemplates);
