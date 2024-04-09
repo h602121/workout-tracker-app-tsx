@@ -1,10 +1,12 @@
-import { Slot } from "expo-router";
-import "expo-dev-client";
+
+import {Slot} from "expo-router";
+import SessionProvider from "../context/sessionContext";
 
 export default function RootLayout() {
-  return (
-    <>
-      <Slot />
-    </>
-  );
+    return(
+        <SessionProvider>
+        <Slot/>
+        </SessionProvider>
+    )
 }
+

@@ -5,10 +5,12 @@ import CreateWorkoutTemplateButton from './CreateWorkoutTemplateButton';
 import WorkoutTemplateForm from './WorkoutTemplateForm';
 import WorkoutTemplateList from './WorkoutTemplateList';
 import NavBar from "./NavBar";
+import {useSessionContext} from "../context/sessionContext";
 
 const WorkoutTemplatesManager: React.FC = () => {
     const [formVisible, setFormVisible] = useState(false);
     const [templates, setTemplates] = useState([]);
+    const {session} = useSessionContext()
 
     const handleSaveTemplate = (templateName: string, workouts: any[]) => {
         const newTemplate = { templateName, workouts };
@@ -17,14 +19,26 @@ const WorkoutTemplatesManager: React.FC = () => {
     };
 
     return (
-        <View className="flex-1 px-4 py-2">
-
+        <View className="flex-1">
             <Modal visible={formVisible} animationType="slide" onRequestClose={() => setFormVisible(false)}>
                 <WorkoutTemplateForm onSave={handleSaveTemplate} />
             </Modal>
-            <WorkoutTemplateList templates={templates} />
-            <CreateWorkoutTemplateButton onPress={() => setFormVisible(true)} />
+
+            {/* Main content area for WorkoutTemplateList */}
+            {/* Assuming the combined height of navbar and button is around h-24 (an example, adjust as needed) */}
+
+                <WorkoutTemplateList templates={templates} />
+
+
+            {/* Assuming CreateWorkoutTemplateButton is at the bottom above the navbar */}
+            {/* This button might need custom positioning depending on your layout */}
+
+            <CreateWorkoutTemplateButton onPress={() => setFormVisible(true)}  />
+
+
         </View>
+
+
     );
 };
 

@@ -16,7 +16,7 @@ const Dashboard: React.FC = () => {
 
     return (
         <View className="flex-1 px-4 py-2">
-            <Text className="text-xl font-bold text-center mb-4">Training Dashboard</Text>
+            <Text className="text-xl font-bold text-center mb-5 mt-2">Training Dashboard</Text>
 
             {/* Workout Progress */}
             <View className="bg-blue-200 rounded-lg p-4 mb-4">
