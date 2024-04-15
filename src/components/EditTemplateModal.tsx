@@ -1,5 +1,7 @@
 import React, {useEffect} from 'react';
 import { Modal, Text, View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import {Icon} from "react-native-elements";
+import {MaterialCommunityIcons} from "@expo/vector-icons";
 
 // Update this interface as per your recent changes
 interface Set {
@@ -50,7 +52,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({ isVisible, templa
         setData({ ...data, template_name: text });
     };
 
-    const updateSetDetail = (workoutId: number, setId: number, field: string, value) => {
+    const updateSetDetail = (workoutId: number, setId: number, field: string, value: number) => {
         const newData = { ...data };
         const workoutIndex = newData.workouts.findIndex(workout => workout.workout_id === workoutId);
         const setIndex = newData.workouts[workoutIndex].sets.findIndex(set => set.set_id === setId);
@@ -73,13 +75,20 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({ isVisible, templa
                 {data.workouts.map((workout) => (
                     <View key={workout.workout_id} className='mb-4'>
                         <Text className='text-lg font-bold mb-2'>{workout.workout_name}</Text>
+                        <View className='flex-row justify-between items-center mb-2'>
+                        <Text className=' p-1 text-center flex-1/2 mx-3 '>Set</Text>
+                        <Text className='text-center flex-1 mx-1 '>Kilos</Text>
+                        <Text className='text-center flex-1 mx-1  mr-11'>Reps</Text>
+
+
+                        </View>
                         {workout.sets.map((set) => (
                             <View key={set.set_id} className='flex-row justify-between items-center mb-2'>
                                 <TextInput
                                     onChangeText={(text) => updateSetDetail(workout.workout_id, set.set_id, 'set_number', text)}
                                     value={String(set.set_number)}
-                                    className='border border-gray-300 p-1 rounded text-center flex-1 mx-1'
-                                    keyboardType="numeric"
+                                    className='p-1 rounded text-center flex-1/2 mx-3 text-blue-500'
+                                    editable={false}
                                 />
                                 <TextInput
                                     onChangeText={(text) => updateSetDetail(workout.workout_id, set.set_id, 'kilos', text)}
@@ -93,8 +102,21 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({ isVisible, templa
                                     className='border border-gray-300 p-1 rounded text-center flex-1 mx-1'
                                     keyboardType="numeric"
                                 />
+                                <TouchableOpacity
+                                onPress={() => console.log("Delete set")}
+                                className="p-2"
+                                >
+                                <MaterialCommunityIcons name="delete" size={24} color="red" />
+                                </TouchableOpacity>
                             </View>
+
                         ))}
+                        <TouchableOpacity
+                            onPress={() => console.log("Add new set")}
+                            className='mb-4 mt-1'
+                        >
+                            <Text className='text-blue-500 text-center'>Add New Set</Text>
+                        </TouchableOpacity>
                     </View>
                 ))}
 

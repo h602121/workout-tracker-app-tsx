@@ -160,14 +160,7 @@ const WorkoutTemplateList: React.FC = () => {
                         {/* Workout List */}
                         {template.workouts.map((workout, workoutIndex) => (
                             <View key={workoutIndex} className="p-3 bg-gray-100">
-                                <Text className="font-semibold">{workout.workout_name}</Text>
-                                {workout.sets.map((set, setIndex) => (
-                                    <View key={setIndex} className="flex-row justify-between mt-1">
-                                        <Text className="text-sm">Set: {set.set_number}</Text>
-                                        <Text className="text-sm">Kg: {set.kilos}</Text>
-                                        <Text className="text-sm">Reps: {set.reps}</Text>
-                                    </View>
-                                ))}
+                                <Text className="font-semibold">{workout.sets.length} x {workout.workout_name}</Text>
                             </View>
                         ))}
 
