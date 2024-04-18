@@ -1,7 +1,8 @@
-import React, {useEffect} from 'react';
-import { Modal, Text, View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {Modal, Text, View, TextInput, TouchableOpacity, ScrollView} from 'react-native';
 import {Icon} from "react-native-elements";
 import {MaterialCommunityIcons} from "@expo/vector-icons";
+import { supabase } from '../lib/supabase';
 
 // Update this interface as per your recent changes
 interface Set {
@@ -31,11 +32,11 @@ interface EditTemplateModalProps {
 }
 
 
-
 // Interfaces defined above remain unchanged
 
-const EditTemplateModal: React.FC<EditTemplateModalProps> = ({ isVisible, template, onClose, onSave }) => {
+const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, template, onClose, onSave}) => {
     const [data, setData] = React.useState<WorkoutTemplate | null>(template);
+    const [deletedSetIds, setDeletedSetIds] = useState<number[]>([]);
 
     useEffect(() => {
         setData(template);
@@ -45,20 +46,124 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({ isVisible, templa
 
     const onSubmit = () => {
         onSave(data);
+        submitDeletions();
         onClose();
     };
 
-    const onChangeTemplateName = (text) => {
-        setData({ ...data, template_name: text });
+    const onChangeTemplateName = (text: string) => {
+        setData({...data, template_name: text});
     };
 
-    const updateSetDetail = (workoutId: number, setId: number, field: string, value: number) => {
-        const newData = { ...data };
-        const workoutIndex = newData.workouts.findIndex(workout => workout.workout_id === workoutId);
-        const setIndex = newData.workouts[workoutIndex].sets.findIndex(set => set.set_id === setId);
-        newData.workouts[workoutIndex].sets[setIndex][field] = Number(value);
-        setData(newData);
+    const updateSetDetail = (setId: number, field: keyof Set, value: number) => {
+        setData((prev) => {
+            if(prev === null) return prev;
+
+            const result = prev.workouts.map((workout => {
+                const set = workout.sets.find(set => set.set_id === setId)
+                if (set) set[field] = Number(value)
+
+                return workout
+            }))
+            return  {...prev, ...result}
+        });
     };
+
+    const deleteSet = (setId: number) => {
+        setData((prev) => {
+            if (prev === null) return prev;
+
+            const updatedWorkouts = prev.workouts.map((workout) => {
+                // Filter out the set to be deleted and track the deleted set ID
+                const filteredSets = workout.sets.filter(set => {
+                    if (set.set_id === setId) {
+                        setDeletedSetIds((prevIds) => [...prevIds, setId]);
+                        return false;
+                    }
+                    return true;
+                });
+
+                // Renumber the remaining sets sequentially
+                const renumberedSets = filteredSets.map((set, index) => ({
+                    ...set,
+                    set_number: index + 1
+                }));
+
+                return {...workout, sets: renumberedSets};
+            });
+
+            return {...prev, workouts: updatedWorkouts};
+        });
+    };
+
+
+    const submitDeletions = async () => {
+        if (deletedSetIds.length === 0) {
+            console.log("No sets to delete");
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from('workout_sets')
+            .delete()
+            .in('set_id', deletedSetIds);
+
+        if (error) {
+            console.error('Failed to delete sets:', error);
+        } else {
+            console.log('Deleted sets successfully:', data);
+            setDeletedSetIds([]); // Clear the tracked deletions after successful operation
+        }
+    };
+
+    const addNewSet = async (workoutId: number) => {
+        // First find the current highest set_number for the given workoutId
+        const currentWorkout = data?.workouts.find(workout => workout.workout_id === workoutId);
+        const currentMaxSetNumber = currentWorkout?.sets.reduce((max, set) => Math.max(max, set.set_number), 0) || 0;
+        const nextSetNumber = currentMaxSetNumber + 1;
+
+        // Insert the new set into Supabase with kilos and reps initialized to 0 and set_number to nextSetNumber
+        const { data: newData, error } = await supabase
+            .from('workout_sets')
+            .insert([
+                {
+                    workout_id: workoutId,
+                    set_number: nextSetNumber,
+                    kilos: 0,
+                    reps: 0
+                }
+            ]).select();
+
+        if (error) {
+            console.error('Error creating new set:', error);
+            return;
+        }
+
+        // Assuming the insert returns the new set data, including the set_id
+        if (newData && newData.length > 0) {
+            const newSet = newData[0];
+
+            // Update the local state to include this new set in the correct workout
+            setData(prev => {
+                if (prev === null) return prev;
+                return {
+                    ...prev,
+                    workouts: prev.workouts.map(workout => {
+                        if (workout.workout_id === workoutId) {
+                            return {
+                                ...workout,
+                                sets: [...workout.sets, newSet]
+                            };
+                        }
+                        return workout;
+                    })
+                };
+            });
+        }
+    };
+
+
+
+
 
     return (
         <Modal visible={isVisible} animationType="slide" onRequestClose={onClose}>
@@ -72,55 +177,58 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({ isVisible, templa
                     placeholder="Template Name"
                 />
 
-                {data.workouts.map((workout) => (
-                    <View key={workout.workout_id} className='mb-4'>
-                        <Text className='text-lg font-bold mb-2'>{workout.workout_name}</Text>
-                        <View className='flex-row justify-between items-center mb-2'>
-                        <Text className=' p-1 text-center flex-1/2 mx-3 '>Set</Text>
-                        <Text className='text-center flex-1 mx-1 '>Kilos</Text>
-                        <Text className='text-center flex-1 mx-1  mr-11'>Reps</Text>
+                {data.workouts.map((workout) => {
+                    return (
+                        <View key={workout.workout_id} className='mb-4'>
+                            <Text className='text-lg font-bold mb-2'>{workout.workout_name}</Text>
+                            <View className='flex-row justify-between items-center mb-2'>
+                                <Text className=' p-1 text-center flex-1/2 mx-3 '>Set</Text>
+                                <Text className='text-center flex-1 mx-1 '>Kilos</Text>
+                                <Text className='text-center flex-1 mx-1  mr-11'>Reps</Text>
 
 
-                        </View>
-                        {workout.sets.map((set) => (
-                            <View key={set.set_id} className='flex-row justify-between items-center mb-2'>
-                                <TextInput
-                                    onChangeText={(text) => updateSetDetail(workout.workout_id, set.set_id, 'set_number', text)}
-                                    value={String(set.set_number)}
-                                    className='p-1 rounded text-center flex-1/2 mx-3 text-blue-500'
-                                    editable={false}
-                                />
-                                <TextInput
-                                    onChangeText={(text) => updateSetDetail(workout.workout_id, set.set_id, 'kilos', text)}
-                                    value={String(set.kilos)}
-                                    className='border border-gray-300 p-1 rounded text-center flex-1 mx-1'
-                                    keyboardType="numeric"
-                                />
-                                <TextInput
-                                    onChangeText={(text) => updateSetDetail(workout.workout_id, set.set_id, 'reps', text)}
-                                    value={String(set.reps)}
-                                    className='border border-gray-300 p-1 rounded text-center flex-1 mx-1'
-                                    keyboardType="numeric"
-                                />
-                                <TouchableOpacity
-                                onPress={() => console.log("Delete set")}
-                                className="p-2"
-                                >
-                                <MaterialCommunityIcons name="delete" size={24} color="red" />
-                                </TouchableOpacity>
                             </View>
+                            {workout.sets.map((set) => {
+                                return (
+                                    <View key={set.set_id} className='flex-row justify-between items-center mb-2'>
+                                        <TextInput
+                                            value={String(set.set_number)}
+                                            className='p-1 rounded text-center flex-1/2 mx-3 text-blue-500'
+                                            editable={false}
+                                        />
+                                        <TextInput
+                                            onChangeText={(text) => updateSetDetail(set.set_id, 'kilos', Number(text))}
+                                            value={String(set.kilos)}
+                                            className='border border-gray-300 p-1 rounded text-center flex-1 mx-1'
+                                            keyboardType="numeric"
+                                        />
+                                        <TextInput
+                                            onChangeText={(text) => updateSetDetail(set.set_id, 'reps', Number(text))}
+                                            value={String(set.reps)}
+                                            className='border border-gray-300 p-1 rounded text-center flex-1 mx-1'
+                                            keyboardType="numeric"
+                                        />
+                                        <TouchableOpacity
+                                            onPress={() =>deleteSet(set.set_id)}
+                                            className="p-2"
+                                        >
+                                            <MaterialCommunityIcons name="delete" size={24} color="red"/>
+                                        </TouchableOpacity>
+                                    </View>
 
-                        ))}
-                        <TouchableOpacity
-                            onPress={() => console.log("Add new set")}
-                            className='mb-4 mt-1'
-                        >
-                            <Text className='text-blue-500 text-center'>Add New Set</Text>
-                        </TouchableOpacity>
-                    </View>
-                ))}
+                                );
+                            })}
+                            <TouchableOpacity
+                                onPress={() => addNewSet(workout.workout_id)}
+                                className='mb-4 mt-1'
+                            >
+                                <Text className='text-blue-500 text-center'>Add New Set</Text>
+                            </TouchableOpacity>
+                        </View>
+                    );
+                })}
 
-                <View className='items-center'>
+                <View className='items-center p-4 mb-4'>
                     <TouchableOpacity onPress={onSubmit} className='bg-blue-500 p-3 rounded mb-4'>
                         <Text className='text-white text-center text-lg'>Save</Text>
                     </TouchableOpacity>

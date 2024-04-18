@@ -46,31 +46,53 @@ const WorkoutTemplateList: React.FC = () => {
 
 //New Code
     const updateTemplateInDatabase = async (updatedTemplate: WorkoutTemplate) => {
-
         if (!updatedTemplate.template_id) {
             console.error('Template missing template_id, cannot update');
             return;
         }
 
+        let errorOccurred = false;
 
-        const { data, error } = await supabase
+        // Update the template name
+        const { error: templateError } = await supabase
             .from('workout_templates')
             .update({ template_name: updatedTemplate.template_name })
-            .eq('template_id', updatedTemplate.template_id)
-            .select()
+            .eq('template_id', updatedTemplate.template_id);
 
-        if (error) {
-            console.error('Error updating template:', error);
-            return;
+        if (templateError) {
+            console.error('Error updating template:', templateError);
+            errorOccurred = true;
         }
 
-        // Refresh local state to reflect the update
-        setTemplates(prevTemplates => prevTemplates.map(template =>
-            template.template_id === updatedTemplate.template_id ? { ...template, ...updatedTemplate } : template
-        ));
+        // Iterate over each workout and update its sets
+        for (const workout of updatedTemplate.workouts) {
+            for (const set of workout.sets) {
+                const { error: setUpdateError } = await supabase
+                    .from('workout_sets')
+                    .update({
+                        kilos: set.kilos,
+                        reps: set.reps,
+                        set_number: set.set_number
+                    })
+                    .eq('set_id', set.set_id);
 
-        console.log('Template updated successfully', data);
+                if (setUpdateError) {
+                    console.error(`Error updating set ${set.set_id}:`, setUpdateError);
+                    errorOccurred = true;
+                }
+            }
+        }
+
+        if (!errorOccurred) {
+            // Refresh local state to reflect the update
+            setTemplates(prevTemplates => prevTemplates.map(template =>
+                template.template_id === updatedTemplate.template_id ? { ...template, ...updatedTemplate } : template
+            ));
+            console.log('Template and sets updated successfully');
+        }
     };
+
+
 
 
 
