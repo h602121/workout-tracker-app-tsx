@@ -109,7 +109,7 @@ const WorkoutTemplateList: React.FC = () => {
                 workouts (
                     workout_name,
                     workout_id,
-                    workout_sets (
+                    workout_sets!fk_workout (
                         set_id,
                         set_number,
                         kilos,

@@ -37,6 +37,8 @@ interface EditTemplateModalProps {
 const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, template, onClose, onSave}) => {
     const [data, setData] = React.useState<WorkoutTemplate | null>(template);
     const [deletedSetIds, setDeletedSetIds] = useState<number[]>([]);
+    const [isAddWorkoutModalVisible, setIsAddWorkoutModalVisible] = useState(false);
+    const [newWorkoutName, setNewWorkoutName] = useState('');
 
     useEffect(() => {
         setData(template);
@@ -161,6 +163,86 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, templat
         }
     };
 
+    const addNewWorkout = async (templateId: number, workoutName: string) => {
+        // Step 1: Insert new workout into Supabase, linked to the template_id
+        if (!workoutName) {
+            alert("Please enter a workout name.");
+            return;
+        }
+
+        const workoutResponse = await supabase
+            .from('workouts')
+            .insert([{
+                workout_name: workoutName,
+                template_id: templateId
+            }])
+            .select('*');
+        if (workoutResponse.error) {
+            console.error('Error inserting new workout:', workoutResponse.error);
+            return;
+        }
+
+        const newWorkout = workoutResponse.data[0];
+
+        // Step 2: Insert new set for the workout into Supabase
+        const setResponse = await supabase
+            .from('workout_sets')
+            .insert([
+                {
+                    workout_id: newWorkout.workout_id,
+                    set_number: 1,
+                    kilos: 0,
+                    reps: 0
+                }
+            ])
+            .select('*');
+
+        if (setResponse.error) {
+            console.error('Error inserting new set:', setResponse.error);
+            return;
+        }
+
+        const newSet = setResponse.data[0];
+
+        // Step 3: Update local state to include the new workout and its set
+        setData(prev => {
+            if (prev === null) return prev;
+            const updatedWorkouts = [...prev.workouts, {
+                ...newWorkout,
+                sets: [newSet]
+            }];
+            return {
+                ...prev,
+                workouts: updatedWorkouts
+            };
+        });
+        setNewWorkoutName("");
+        setIsAddWorkoutModalVisible(false);
+    };
+
+    const deleteWorkout = async (workoutId: number) => {
+        // Step 1: Delete the workout from the database
+        const { error } = await supabase
+            .from('workouts')
+            .delete()
+            .match({ workout_id: workoutId });
+
+        if (error) {
+            console.error('Failed to delete workout and its sets:', error);
+            return;
+        }
+
+        // Step 2: Update local state to remove the workout and its sets
+        setData(prev => {
+            if (prev === null) return prev;
+
+            const updatedWorkouts = prev.workouts.filter(workout => workout.workout_id !== workoutId);
+            return { ...prev, workouts: updatedWorkouts };
+        });
+    };
+
+
+
 
 
 
@@ -177,10 +259,19 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, templat
                     placeholder="Template Name"
                 />
 
+
                 {data.workouts.map((workout) => {
                     return (
                         <View key={workout.workout_id} className='mb-4'>
-                            <Text className='text-lg font-bold mb-2'>{workout.workout_name}</Text>
+                            <View className = "flex-row items-center">
+                            <Text className='text-lg font-bold'>{workout.workout_name}</Text>
+                            <TouchableOpacity
+                                onPress={() => deleteWorkout(workout.workout_id)}
+                                className="p-2"
+                            >
+                                <MaterialCommunityIcons name="minus" size={24} color="red"/>
+                            </TouchableOpacity>
+                            </View>
                             <View className='flex-row justify-between items-center mb-2'>
                                 <Text className=' p-1 text-center flex-1/2 mx-3 '>Set</Text>
                                 <Text className='text-center flex-1 mx-1 '>Kilos</Text>
@@ -227,17 +318,51 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, templat
                         </View>
                     );
                 })}
-
-                <View className='items-center p-4 mb-4'>
-                    <TouchableOpacity onPress={onSubmit} className='bg-blue-500 p-3 rounded mb-4'>
-                        <Text className='text-white text-center text-lg'>Save</Text>
+                <View className='items-center'>
+                    <TouchableOpacity
+                        onPress={() => setIsAddWorkoutModalVisible(true)}
+                        className='mb-4 mt-1'
+                    >
+                        <Text className='text-blue-500 text-center text-xl'>Add Workout</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={onClose} className='bg-red-500 p-3 rounded'>
-                        <Text className='text-white text-center text-lg'>Cancel</Text>
+                </View>
+                <View className='items-center p-4 mb-4'>
+
+                    <TouchableOpacity onPress={onSubmit} className='mb-4 mt-1'>
+                        <Text className='text-blue-500 text-center text-2xl'>Save</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={onClose} className='mb-4 mt-1'>
+                        <Text className='text-red-400 text-center text-xl'>Cancel</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={isAddWorkoutModalVisible}
+                onRequestClose={() => setIsAddWorkoutModalVisible(false)}
+            >
+                <View className="flex-1 justify-center items-center  bg-opacity-50 px-4">
+                    <View className="bg-gray-300 rounded-lg p-6 shadow-lg w-full max-w-lg">
+                        <TextInput
+                            placeholder="Enter Workout Name"
+                            value={newWorkoutName}
+                            onChangeText={setNewWorkoutName}
+                            className="h-12 mb-4 border border-gray-200 rounded p-2 text-lg"
+                            placeholderTextColor="black"
+                        />
+                        <TouchableOpacity
+                            className="bg-blue-500 rounded-lg p-3 shadow"
+                            onPress={() => addNewWorkout(data?.template_id, newWorkoutName)}
+                        >
+                            <Text className="text-white text-center text-lg">Add Workout</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </Modal>
+
+
     );
 };
 
