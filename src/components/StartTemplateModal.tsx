@@ -24,7 +24,7 @@ interface WorkoutTemplate {
     workouts: Workout[];
 }
 
-interface EditTemplateModalProps {
+interface StartTemplateModalProps {
     isVisible: boolean;
     template: WorkoutTemplate | null;
     onClose: () => void;
@@ -34,7 +34,7 @@ interface EditTemplateModalProps {
 
 // Interfaces defined above remain unchanged
 
-const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, template, onClose, onSave}) => {
+const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, template, onClose, onSave}) => {
     const [data, setData] = React.useState<WorkoutTemplate | null>(template);
     const [deletedSetIds, setDeletedSetIds] = useState<number[]>([]);
     const [isAddWorkoutModalVisible, setIsAddWorkoutModalVisible] = useState(false);
@@ -250,27 +250,15 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, templat
     return (
         <Modal visible={isVisible} animationType="slide" onRequestClose={onClose}>
             <ScrollView className='flex-1 p-4 bg-white' contentContainerStyle={{ paddingBottom: 80, flexGrow: 1 }}>
-                <Text className='text-xl font-bold mb-4'>Edit Template</Text>
+                <Text className='text-xl font-bold mb-10'>{data.template_name}</Text>
 
-                <TextInput
-                    onChangeText={onChangeTemplateName}
-                    value={data.template_name}
-                    className='border border-gray-300 p-2 rounded mb-4'
-                    placeholder="Template Name"
-                />
 
 
                 {data.workouts.map((workout) => {
                     return (
                         <View key={workout.workout_id} className='mb-4'>
                             <View className = "flex-row items-center">
-                            <Text className='text-lg font-bold'>{workout.workout_name}</Text>
-                            <TouchableOpacity
-                                onPress={() => deleteWorkout(workout.workout_id)}
-                                className="p-2"
-                            >
-                                <MaterialCommunityIcons name="minus" size={24} color="red"/>
-                            </TouchableOpacity>
+                                <Text className='text-lg font-bold'>{workout.workout_name}</Text>
                             </View>
                             <View className='flex-row justify-between items-center mb-2'>
                                 <Text className=' p-1 text-center flex-1/2 mx-3 '>Set</Text>
@@ -300,10 +288,10 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, templat
                                             keyboardType="numeric"
                                         />
                                         <TouchableOpacity
-                                            onPress={() =>deleteSet(set.set_id)}
+                                            onPress={() => console.log("Change color to green")}
                                             className="p-2"
                                         >
-                                            <MaterialCommunityIcons name="delete" size={24} color="red"/>
+                                            <MaterialCommunityIcons name="check" size={24} color="green"/>
                                         </TouchableOpacity>
                                     </View>
 
@@ -369,4 +357,4 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, templat
     );
 };
 
-export default EditTemplateModal;
+export default StartTemplateModal;

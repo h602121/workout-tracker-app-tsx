@@ -3,7 +3,8 @@ import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSessionContext } from '../context/sessionContext'; // Ensure this is correctly imported
 import { supabase } from '../lib/supabase';
-import EditTemplateModal from "./EditTemplateModal"; // Import your initialized Supabase client
+import EditTemplateModal from "./EditTemplateModal";
+import StartTemplateModal from "./StartTemplateModal"; // Import your initialized Supabase client
 
 
 // Adjust these interfaces to match your data structure
@@ -30,6 +31,7 @@ const WorkoutTemplateList: React.FC = () => {
     const { session } = useSessionContext();
     const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [isStartModalVisible, setIsStartModalVisible] = useState(false);
     const [currentTemplateToEdit, setCurrentTemplateToEdit] = useState<WorkoutTemplate | null>(null);
 
     //New Code
@@ -39,6 +41,17 @@ const WorkoutTemplateList: React.FC = () => {
         if (templateToEdit) {
             setCurrentTemplateToEdit(templateToEdit);
             setIsEditModalVisible(true);
+        } else {
+            console.error("Template not found:", templateId);
+        }
+    };
+
+    const onStart = (templateId: number) => {
+        console.log(templateId, templates.map(t => t.template_id));
+        const templateToEdit = templates.find(template => template.template_id === templateId);
+        if (templateToEdit) {
+            setCurrentTemplateToEdit(templateToEdit);
+            setIsStartModalVisible(true);
         } else {
             console.error("Template not found:", templateId);
         }
@@ -161,7 +174,7 @@ const WorkoutTemplateList: React.FC = () => {
                             {/* Left side: Template name and play button */}
                             <View className="flex-row items-center">
                                 <Text className="text-lg font-bold text-white">{template.template_name} </Text>
-                                <TouchableOpacity onPress={() => onStart(index)}>
+                                <TouchableOpacity onPress={() => onStart(template.template_id)}>
                                     <MaterialCommunityIcons name="play" size={24} color="#90EE90" />
                                 </TouchableOpacity>
                             </View>
@@ -186,8 +199,6 @@ const WorkoutTemplateList: React.FC = () => {
                             </View>
                         ))}
 
-                        {/* Placeholder for Start Button */}
-
                     </View>
                 ))}
 
@@ -198,6 +209,16 @@ const WorkoutTemplateList: React.FC = () => {
                     onSave={(updatedTemplate) => {
                         updateTemplateInDatabase(updatedTemplate);
                         setIsEditModalVisible(false); // Optionally close the modal here
+                    }}
+                />
+
+                <StartTemplateModal
+                    isVisible={isStartModalVisible}
+                    template={currentTemplateToEdit}
+                    onClose={() => setIsStartModalVisible(false)}
+                    onSave={(updatedTemplate) => {
+                        updateTemplateInDatabase(updatedTemplate);
+                        setIsStartModalVisible(false); // Optionally close the modal here
                     }}
                 />
 
