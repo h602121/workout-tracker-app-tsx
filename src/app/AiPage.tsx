@@ -20,6 +20,7 @@ import { Audio } from "expo-av";
 import fetchAudio from "../../utils/fetchAudio";
 import { writeAudioToFile } from "../../utils/writeAudioToFile";
 import { playFromPath } from "../../utils/playFromPath";
+import WorkoutTemplateParser from "../components/HandleGPTOutput";
 
 Audio.setAudioModeAsync({
   allowsRecordingIOS: false,
@@ -90,6 +91,7 @@ export default function AiPage() {
       console.log("fetching");
       const audioBlob = await fetchAudio(state.results[0]);
       setResponseGPT(audioBlob);
+      console.log(responseGPT);
       destroyRecognizer();
     } catch (e) {
       console.log(e);
@@ -120,7 +122,7 @@ export default function AiPage() {
         </Pressable>
         <Text>{JSON.stringify(state, null, 2)}</Text>
 
-        <Text>{responseGPT}</Text>
+        <WorkoutTemplateParser gptString={responseGPT}></WorkoutTemplateParser>
 
         <NavBar />
       </View>

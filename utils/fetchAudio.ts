@@ -1,6 +1,5 @@
 import { EXPO_PUBLIC_MY_ENDPOINT } from "@env";
 export const fetchAudio = async (text: string) => {
-  console.log("TESTETSTSTSTSTSTSTST");
   console.log(EXPO_PUBLIC_MY_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -15,7 +14,7 @@ export const fetchAudio = async (text: string) => {
   //uncomment this for audio response
   //const result = await response.blob();
   const result = await response.text();
-  console.log(result);
+  console.log("result " + result);
 
   return result;
 };
