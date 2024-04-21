@@ -14,11 +14,13 @@ This application is suitable for anyone looking to track their workout progress 
 
 **Key Features**
 
-Chatbot Assistance: Utilize the built-in chatbot to generate personalized workout plans tailored to your specific requirements.
-Workout Tracking: Log and track your workout sessions, including exercises, sets, reps, and progress metrics.
-Customization Options: Customize your workout plans based on fitness goals, time availability, preferred exercises, and more.
-User-Friendly Interface: Enjoy a seamless user experience with an intuitive interface designed for ease of navigation and interaction.
-Impact and Innovation
+**Chatbot Assistance:** Utilize the built-in chatbot to generate personalized workout plans tailored to your specific requirements.
+**Workout Tracking:** Log and track your workout sessions, including exercises, sets, reps, and progress metrics.
+**Customization Options:** Customize your workout plans based on fitness goals, time availability, preferred exercises, and more.
+**User-Friendly Interface:** Enjoy a seamless user experience with an intuitive interface designed for ease of navigation and interaction.
+
+
+**Impact and Innovation**
 By integrating AI-driven chatbot technology into a workout tracking app, this project offers a novel solution to the common challenge of creating personalized workout plans. The ability to receive real-time assistance from a virtual personal trainer empowers users to overcome barriers to fitness success and achieve their health and wellness goals more effectively.
 
 **Installation**
