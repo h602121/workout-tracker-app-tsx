@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Modal, Text, View, TextInput, TouchableOpacity, ScrollView} from 'react-native';
 import {Icon} from "react-native-elements";
 import {MaterialCommunityIcons} from "@expo/vector-icons";
@@ -10,6 +10,7 @@ interface Set {
     kilos: number;
     reps: number;
     set_id: number;
+    isCompleted?: boolean;
 }
 
 interface Workout {
@@ -39,12 +40,38 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
     const [deletedSetIds, setDeletedSetIds] = useState<number[]>([]);
     const [isAddWorkoutModalVisible, setIsAddWorkoutModalVisible] = useState(false);
     const [newWorkoutName, setNewWorkoutName] = useState('');
+    const [timer, setTimer] = useState(0);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+
 
     useEffect(() => {
         setData(template);
     }, [template]);
 
+    useEffect(() => {
+        intervalRef.current = setInterval(() => {
+            setTimer(prevTimer => prevTimer + 1);
+            console.log('Timer tick:', prevTimer + 1);  // Log each tick for diagnostic purposes
+        }, 1000);
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+                console.log('Interval cleared');  // Confirm interval clearance on unmount
+            }
+        };
+    }, []);  // Empty dependency array ensures this runs only on mount
+
+
     if (data === null) return null;
+
+    const displayTime = () => {
+        const seconds = timer % 60;
+        const minutes = Math.floor(timer / 60);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
 
     const onSubmit = () => {
         onSave(data);
@@ -55,6 +82,8 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
     const onChangeTemplateName = (text: string) => {
         setData({...data, template_name: text});
     };
+
+
 
     const updateSetDetail = (setId: number, field: keyof Set, value: number) => {
         setData((prev) => {
@@ -232,7 +261,7 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
             return;
         }
 
-        // Step 2: Update local state to remove the workout and its sets
+        // Update local state to remove the workout and its sets
         setData(prev => {
             if (prev === null) return prev;
 
@@ -241,6 +270,31 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
         });
     };
 
+    const completeSet = (workoutId: number, setId: number) => {
+        setData(prev => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                workouts: prev.workouts.map(workout => {
+                    if (workout.workout_id === workoutId) {
+                        return {
+                            ...workout,
+                            sets: workout.sets.map(set => {
+                                if (set.set_id === setId) {
+                                    if (set.isCompleted) {
+                                        return {...set, isCompleted: false};
+                                    }
+                                    return {...set, isCompleted: true}; // Toggle completion status
+                                }
+                                return set;
+                            })
+                        };
+                    }
+                    return workout;
+                })
+            };
+        });
+    };
 
 
 
@@ -250,7 +304,8 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
     return (
         <Modal visible={isVisible} animationType="slide" onRequestClose={onClose}>
             <ScrollView className='flex-1 p-4 bg-white' contentContainerStyle={{ paddingBottom: 80, flexGrow: 1 }}>
-                <Text className='text-xl font-bold mb-10'>{data.template_name}</Text>
+                <Text className='text-2xl font-bold mb-5'>{data.template_name}</Text>
+                <Text className='text-xl  mb-5'>Timer: {displayTime()}</Text>
 
 
 
@@ -258,7 +313,7 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
                     return (
                         <View key={workout.workout_id} className='mb-4'>
                             <View className = "flex-row items-center">
-                                <Text className='text-lg font-bold'>{workout.workout_name}</Text>
+                                <Text className='text-lg font-bold mb-2'>{workout.workout_name}</Text>
                             </View>
                             <View className='flex-row justify-between items-center mb-2'>
                                 <Text className=' p-1 text-center flex-1/2 mx-3 '>Set</Text>
@@ -267,9 +322,17 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
 
 
                             </View>
-                            {workout.sets.map((set) => {
+                            {workout.sets.map((set, index) => {
                                 return (
-                                    <View key={set.set_id} className='flex-row justify-between items-center mb-2'>
+                                    <View key={set.set_id}
+                                          className={`flex-row justify-between items-center  p-1 ${
+                                              set.isCompleted ? 'bg-green-200' : 'bg-white'
+                                          } ${
+                                              index === 0 ? 'rounded-t-lg' : ''  // Top rounding for the first item
+                                          } ${
+                                              index === workout.sets.length - 1 ? 'rounded-b-lg' : ''  // Bottom rounding for the last item
+                                          }`}>
+
                                         <TextInput
                                             value={String(set.set_number)}
                                             className='p-1 rounded text-center flex-1/2 mx-3 text-blue-500'
@@ -278,20 +341,20 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
                                         <TextInput
                                             onChangeText={(text) => updateSetDetail(set.set_id, 'kilos', Number(text))}
                                             value={String(set.kilos)}
-                                            className='border border-gray-300 p-1 rounded text-center flex-1 mx-1'
+                                            className={`border ${set.isCompleted?'border-green-200':'border-gray-300'} p-1 rounded text-center flex-1 mx-1`}
                                             keyboardType="numeric"
                                         />
                                         <TextInput
                                             onChangeText={(text) => updateSetDetail(set.set_id, 'reps', Number(text))}
                                             value={String(set.reps)}
-                                            className='border border-gray-300 p-1 rounded text-center flex-1 mx-1'
+                                            className={`border ${set.isCompleted?'border-green-200':'border-gray-300'} p-1 rounded text-center flex-1 mx-1`}
                                             keyboardType="numeric"
                                         />
                                         <TouchableOpacity
-                                            onPress={() => console.log("Change color to green")}
-                                            className="p-2"
+                                            onPress={() => completeSet(workout.workout_id, set.set_id)}
+                                            className="p-2 bg-gray-200 rounded-full"
                                         >
-                                            <MaterialCommunityIcons name="check" size={24} color="green"/>
+                                            <MaterialCommunityIcons name="check" size={18} color={set.isCompleted ? "darkgreen" : "green"}/>
                                         </TouchableOpacity>
                                     </View>
 
@@ -323,8 +386,8 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
                     <Text className="text-red-500 font-bold">Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onSubmit} className="flex flex-row items-center">
-                    <MaterialCommunityIcons name="check-circle" size={24} color="#10b981" className="mr-2" />
-                    <Text className="text-green-500 font-bold">Save</Text>
+                    <MaterialCommunityIcons name="check-circle" size={24} color="#3b82f6" className="mr-2" />
+                    <Text className="text-blue-500 font-bold">Finish</Text>
                 </TouchableOpacity>
             </View>
             <Modal

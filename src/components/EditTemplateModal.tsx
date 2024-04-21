@@ -10,6 +10,7 @@ interface Set {
     kilos: number;
     reps: number;
     set_id: number;
+
 }
 
 interface Workout {
