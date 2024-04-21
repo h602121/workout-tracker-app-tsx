@@ -23,9 +23,3 @@ Install dependencies using npm install.
 Run the application using npm start.
 Contribution Guidelines
 We welcome contributions from the community to enhance and improve the Workout Tracker with Chatbot. Please refer to our contribution guidelines for more information on how to get involved.
-
-**License**
-This project is licensed under the MIT License.
-
-**Contact**
-For questions, feedback, or support, please contact projectmaintainer@example.com.
