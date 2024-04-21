@@ -38,7 +38,4 @@ By integrating AI-driven chatbot technology into a workout tracking app, this pr
 
 Clone the repository to your local machine.
 Install dependencies using npm install.
-Run the application using npm start.
-
-**Contribution Guidelines**
-We welcome contributions from the community to enhance and improve the Workout Tracker with Chatbot. Please refer to our contribution guidelines for more information on how to get involved.
+Run the application using npx expo start.
