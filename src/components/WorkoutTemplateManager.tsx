@@ -24,14 +24,10 @@ const WorkoutTemplatesManager: React.FC = () => {
                 <WorkoutTemplateForm onSave={handleSaveTemplate} />
             </Modal>
 
-            {/* Main content area for WorkoutTemplateList */}
-            {/* Assuming the combined height of navbar and button is around h-24 (an example, adjust as needed) */}
 
                 <WorkoutTemplateList templates={templates} />
 
 
-            {/* Assuming CreateWorkoutTemplateButton is at the bottom above the navbar */}
-            {/* This button might need custom positioning depending on your layout */}
 
             <CreateWorkoutTemplateButton onPress={() => setFormVisible(true)}  />
 

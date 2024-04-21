@@ -169,7 +169,6 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
             return;
         }
 
-        // Assuming the insert returns the new set data, including the set_id
         if (newData && newData.length > 0) {
             const newSet = newData[0];
 
@@ -193,7 +192,7 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
     };
 
     const addNewWorkout = async (templateId: number, workoutName: string) => {
-        // Step 1: Insert new workout into Supabase, linked to the template_id
+        //  Insert new workout into Supabase, linked to the template_id
         if (!workoutName) {
             alert("Please enter a workout name.");
             return;
@@ -213,7 +212,7 @@ const StartTemplateModal: React.FC<StartTemplateModalProps> = ({isVisible, templ
 
         const newWorkout = workoutResponse.data[0];
 
-        // Step 2: Insert new set for the workout into Supabase
+        //  Insert new set for the workout into Supabase
         const setResponse = await supabase
             .from('workout_sets')
             .insert([

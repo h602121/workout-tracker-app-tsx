@@ -165,7 +165,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, templat
     };
 
     const addNewWorkout = async (templateId: number, workoutName: string) => {
-        // Step 1: Insert new workout into Supabase, linked to the template_id
+        //  Insert new workout into Supabase, linked to the template_id
         if (!workoutName) {
             alert("Please enter a workout name.");
             return;
@@ -233,7 +233,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({isVisible, templat
             return;
         }
 
-        // Step 2: Update local state to remove the workout and its sets
+        //  Update local state to remove the workout and its sets
         setData(prev => {
             if (prev === null) return prev;
 

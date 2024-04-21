@@ -38,7 +38,7 @@ const Navbar: React.FC = () => {
       </TouchableOpacity>
       <TouchableOpacity
         className="flex-1 items-center justify-center"
-        onPress={() => router.push("/WorkoutsPage")} // Use router.push to navigate
+        onPress={() => router.push("/WorkoutsPage")}
       >
         <MaterialCommunityIcons name="dumbbell" size={30} color="white" />
       </TouchableOpacity>
