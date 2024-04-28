@@ -39,3 +39,7 @@ By integrating AI-driven chatbot technology into a workout tracking app, this pr
 Clone the repository to your local machine.
 Install dependencies using npm install.
 Run the application using npx expo start.
+
+'''
+Test
+'''
