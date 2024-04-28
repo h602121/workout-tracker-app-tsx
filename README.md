@@ -35,11 +35,18 @@ By integrating AI-driven chatbot technology into a workout tracking app, this pr
 
 
 **Installation**
+```
+1. Install the EXPO GO app on your phone 
+2. Clone the repository to your local machine.
+3. Install dependencies using npm install.
+4. Run the application using npx expo start.
+5. Press S, this will change it from Dev mode to Expo GO
+6. Scan the generated QR with the EXPO GO app on your phone
+7. Make sure your phone and the computer is on the same WIFI
+8. The application should now build on your phone.
+9. To run the AI integration you'll need to run an android emulator
 
-Clone the repository to your local machine.
-Install dependencies using npm install.
-Run the application using npx expo start.
+Update: Since the repo went live, API key from OpenAI has been revoked.
+You'll still be able to see the local code, and we'll be able to show this feature on demand. 
 
-'''
-Test
-'''
+```
